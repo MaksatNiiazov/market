@@ -1,0 +1,92 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  POSTGRES_USER: 'tanda_backend'
+  POSTGRES_PASSWORD: ''
+  POSTGRES_DB: 'test_tanda_backend'
+  POSTGRES_HOST_AUTH_METHOD: trust
+  DOCKER_DRIVER: overlay2
+  RUN_HOST: $USER_SERVER@$IP_SERVER
+
+image:
+  name: docker:24.0.5
+
+services:
+  - docker:24.0.5-dind
+
+build-staging:
+  stage: build
+  environment:
+    name: staging
+  only:
+    - main
+  script:
+    - export BRANCH_NAME=$CI_COMMIT_BRANCH
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - cp $ENV_FILE .env
+    - docker compose build
+    - docker compose push
+
+deploy-staging:
+  stage: deploy
+  environment:
+    name: staging
+  only:
+    - main
+  before_script:
+    - apk update && apk add openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | base64 -d > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh -o StrictHostKeyChecking=no "$USER_SERVER@$IP_SERVER" "echo Connected"
+  script:
+    - export DOCKER_HOST=ssh://$RUN_HOST
+    - export BRANCH_NAME=$CI_COMMIT_BRANCH
+    - export DNS_NAME=$DNS_NAME
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - cp $ENV_FILE .env
+    - docker network create --driver bridge backend || true
+    - docker compose pull
+    - docker compose up -d
+    - docker logout $CI_REGISTRY
+    - docker image prune -a -f
+
+build-production:
+  stage: build
+  environment:
+    name: production
+  only:
+    - production
+  script:
+    - export BRANCH_NAME=$CI_COMMIT_BRANCH
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - cp $ENV_FILE .env
+    - docker compose build
+    - docker compose push
+
+deploy-production:
+  stage: deploy
+  environment:
+    name: production
+  only:
+    - production
+  when: manual
+  before_script:
+    - apk update && apk add openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | base64 -d > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh -o StrictHostKeyChecking=no "$USER_SERVER@$IP_SERVER" "echo Connected"
+  script:
+    - export DOCKER_HOST=ssh://$RUN_HOST
+    - export BRANCH_NAME=$CI_COMMIT_BRANCH
+    - export DNS_NAME=$DNS_NAME
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - cp $ENV_FILE .env
+    - docker network create --driver bridge backend || true
+    - docker compose pull
+    - docker compose up -d
+    - docker logout $CI_REGISTRY
+    - docker image prune -a -f
