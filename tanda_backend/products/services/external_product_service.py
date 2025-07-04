@@ -3,11 +3,11 @@ Service for working with external product API.
 """
 import base64
 import enum
-import uuid
 from enum import Enum
 from typing import Optional, Any
 from uuid import UUID
-
+from http import HTTPStatus
+from typing import Any
 import requests
 from django.conf import settings
 from pydantic import BaseModel
@@ -170,7 +170,36 @@ def create_external_product(product_data: ExternalProductCreateRequest) -> Produ
         timeout=30,
     )
 
-    if response.status_code != 200:
-        raise ValueError(f"Failed to create product in external service: {response.text}")
-
+    if response.status_code != HTTPStatus.OK:
+        message = f"Failed to create product in external service: {response.text}"
+        raise ValueError(message)
     return ProductCreateResponse(**response.json())
+
+
+class ExternalProductUpdateRequest(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    brand: str | None = None
+    category_public_id: str | None = None
+
+    class Config:
+        from_attributes = True
+
+
+def update_external_product(product_public_id: str, product_data: ExternalProductUpdateRequest) -> None:
+    """Update product in external service."""
+    base_url = settings.EXTERNAL_PRODUCT_API_URL
+    access_token = get_access_token()
+    response = requests.patch(
+        f"{base_url}/api/external/products/{product_public_id}/",
+        json=product_data.model_dump(exclude_none=True),
+        headers={
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        },
+        timeout=30,
+    )
+
+    if response.status_code != HTTPStatus.OK:
+        message = f"Failed to update product in external service: {response.text}"
+        raise ValueError(message)

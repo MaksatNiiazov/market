@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "tanda_backend.products",
     "tanda_backend.merchant",
     "tanda_backend.orders",
+    "tanda_backend.payment",
 ]
 
 MIDDLEWARE = [

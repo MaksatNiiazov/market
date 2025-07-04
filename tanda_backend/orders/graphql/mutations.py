@@ -4,7 +4,7 @@ from django.db import transaction
 
 from tanda_backend.orders.graphql.types import OrderType
 from tanda_backend.orders.models import PaymentType, DeliveryType
-from tanda_backend.orders.services import create_order
+from tanda_backend.orders.services import create_orders
 
 
 class VariantInput(graphene.InputObjectType):
@@ -23,7 +23,7 @@ class CreateOrder(graphene.Mutation):
         comments = graphene.String()
         variants = graphene.List(VariantInput, required=True)
 
-    order = graphene.Field(OrderType)
+    orders = graphene.List(OrderType)
 
     @login_required
     @transaction.atomic
@@ -51,7 +51,7 @@ class CreateOrder(graphene.Mutation):
         except ValueError:
             raise Exception("Invalid delivery method")
 
-        order = create_order(
+        orders = create_orders(
             user=user,
             full_name=full_name,
             phone_number=phone_number,
@@ -62,7 +62,7 @@ class CreateOrder(graphene.Mutation):
             comments=comments,
             variants=variants
         )
-        return CreateOrder(order=order)
+        return CreateOrder(orders=orders)
 
 
 class Mutation(graphene.ObjectType):
