@@ -1,0 +1,66 @@
+version: '3.7'
+
+
+x-python-service-properties:
+  &python-service-properties
+  build: .
+  working_dir: /app/
+  env_file: .env
+  networks:
+    backend:
+
+services:
+
+  backend:
+    container_name: backend
+    image: registry.gitlab.com/tanda-market/tankda-backend/backend:${BRANCH_NAME}
+    restart: always
+    ports:
+      - "8001:8001"
+    <<: *python-service-properties
+    labels:
+      filebeat.enabled: "true"
+      filebeat.service: "tanda-api"
+      filebeat.env: "${ENVIRONMENT}"
+
+  merchant_consumers:
+    container_name: merchant_consumers
+    image: registry.gitlab.com/tanda-market/tankda-backend/merchant_consumers:${BRANCH_NAME}
+    command: poetry run python manage.py merchant_consumers --settings=config.settings.production
+    restart: always
+    <<: *python-service-properties
+    labels:
+      filebeat.enabled: "true"
+      filebeat.service: "tanda-merchant-consumers"
+      filebeat.env: "${ENVIRONMENT}"
+
+  products_consumers:
+    container_name: products_consumers
+    image: registry.gitlab.com/tanda-market/tankda-backend/products_consumers:${BRANCH_NAME}
+    command: poetry run python manage.py products_consumers --settings=config.settings.production
+    restart: always
+    <<: *python-service-properties
+    labels:
+      filebeat.enabled: "true"
+      filebeat.service: "tanda-products-consumers"
+      filebeat.env: "${ENVIRONMENT}"
+
+  postgres:
+    restart: always
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_MULTIPLE_DATABASES=tanda
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      backend:
+
+networks:
+   backend:
+    driver: bridge
+    external: true
+
+volumes:
+  postgres_data:
