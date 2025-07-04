@@ -30,6 +30,14 @@ class Query(graphene.ObjectType):
         offset=graphene.Int(),
         merchant_id=graphene.ID(required=True),
     )
+    merchant_products = graphene.Field(
+        ProductPagination,
+        search=graphene.String(),
+        category_id=graphene.ID(),
+        limit=graphene.Int(),
+        offset=graphene.Int(),
+        merchant_id=graphene.ID(required=True),
+    )
     kanban_cards = graphene.List(
         KanbanCardOrderType,
         merchant_id=graphene.ID(required=True),
@@ -125,4 +133,46 @@ class Query(graphene.ObjectType):
             has_next_page=has_next_page,
             has_previous_page=has_previous_page,
             items=products
+        )
+
+    def resolve_merchant_products(
+        self,
+        info,
+        merchant_id: int,
+        search=None,
+        category_id=None,
+        limit=10,
+        offset=0,
+    ):
+        query = Product.objects.filter(
+            merchant_id=merchant_id,
+            is_approved=True,
+            productvariant__isnull=False,
+        ).order_by("id").distinct()
+
+        filters = Q()
+        if search:
+            filters &= Q(title__icontains=search) | Q(description__icontains=search)
+
+        if category_id:
+            filters &= Q(category_id=category_id)
+
+        if filters:
+            query = query.filter(filters)
+
+        total_count = query.count()
+
+        if offset > 0:
+            query = query[offset:]
+
+        products = query[:limit]
+
+        has_next_page = total_count > (offset + limit)
+        has_previous_page = offset > 0
+
+        return ProductPagination(
+            total_count=total_count,
+            has_next_page=has_next_page,
+            has_previous_page=has_previous_page,
+            items=products,
         )
