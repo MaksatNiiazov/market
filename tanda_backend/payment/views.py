@@ -5,7 +5,8 @@ from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .models import Payment
-from .services import create_finik_qr_payment
+from django.shortcuts import get_object_or_404
+from .services import create_finik_qr_payment, get_finik_payment_status
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -66,3 +67,31 @@ class CreatePaymentView(APIView):
             "qr_url": payment.qr_url,
             "qr_image": payment.qr_image,
         })
+
+
+class PaymentDetailView(APIView):
+    """Return payment information and refresh status from Finik."""
+
+    def get(self, request, order_id: str):
+        payment = get_object_or_404(Payment, order_id=order_id)
+        if payment.status == "pending" and payment.finik_item_id:
+            try:
+                status = get_finik_payment_status(payment.finik_item_id)
+                if status:
+                    if status == "SUCCEEDED":
+                        payment.status = "succeeded"
+                    elif status == "FAILED":
+                        payment.status = "failed"
+                    payment.save()
+            except Exception:
+                pass
+
+        return Response(
+            {
+                "order_id": payment.order_id,
+                "amount": payment.amount,
+                "status": payment.status,
+                "qr_url": payment.qr_url,
+                "qr_image": payment.qr_image,
+            }
+        )

@@ -28,7 +28,7 @@ urlpatterns = [
     path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=True))),
     path("", include("tanda_backend.users.urls")),
     path("", include("tanda_backend.products.urls")),
-    path("", include("tanda_backend.payment.urls")),
+    path("api/payments/", include("tanda_backend.payment.urls")),
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]
 
