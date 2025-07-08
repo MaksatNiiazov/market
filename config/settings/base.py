@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "mptt",
     "graphene_django",
+    'rest_framework',
     "tanda_backend.oauth",
     "tanda_backend.users",
     "tanda_backend.products",

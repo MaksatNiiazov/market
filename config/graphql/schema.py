@@ -8,6 +8,7 @@ from tanda_backend.merchant.graphql import schema as merchant_schema
 from tanda_backend.products.graphql import mutations as products_mutations
 from tanda_backend.orders.graphql import schema as orders_schema
 from tanda_backend.orders.graphql import mutations as orders_mutations
+from tanda_backend.payment.graphql import schema as payment_schema
 
 
 class Query(
@@ -15,6 +16,7 @@ class Query(
     products_schema.Query,
     merchant_schema.Query,
     orders_schema.Query,
+    payment_schema.Query,
     graphene.ObjectType,
 ):
     # Inherits all classes and methods from app-specific queries, so no need

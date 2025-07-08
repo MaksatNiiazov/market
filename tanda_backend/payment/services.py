@@ -1,8 +1,8 @@
 import time
 import json
 import requests
-from django.conf import settings
 from authorizer import Signer
+from django.conf import settings
 
 
 def create_finik_qr_payment(order_id, amount, name_en):

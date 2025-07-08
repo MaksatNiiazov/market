@@ -4,8 +4,7 @@ Service for working with external product API.
 import base64
 import enum
 from enum import Enum
-from http import HTTPStatus
-from typing import Any
+from typing import Optional, Any
 from uuid import UUID
 from http import HTTPStatus
 from typing import Any
@@ -174,15 +173,9 @@ def create_external_product(product_data: ExternalProductCreateRequest) -> Produ
     if response.status_code != HTTPStatus.OK:
         message = f"Failed to create product in external service: {response.text}"
         raise ValueError(message)
-<<<<<<< HEAD
     return ProductCreateResponse(**response.json())
 
 
-=======
-
-    return ProductCreateResponse(**response.json())
-
->>>>>>> cef0015ae8a7b7fd390bad6b092bca56d970e0fc
 class ExternalProductUpdateRequest(BaseModel):
     title: str | None = None
     description: str | None = None

@@ -2,7 +2,8 @@ import graphene
 from graphql.error import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from tanda_backend.orders.models import Order, PaymentType
+from tanda_backend.orders.models import Order
+from tanda_backend.payment.graphql.types import PaymentType
 from tanda_backend.payment.models import Payment
 
 
@@ -18,8 +19,7 @@ class Query(graphene.ObjectType):
             raise GraphQLError("Order not found")
 
         if order.user_id != user.id and (
-            not getattr(user, "merchant", None)
-            or order.merchant_id != getattr(user.merchant, "id", None)
+            not getattr(user, "merchant", None) or order.merchant_id != getattr(user.merchant, "id", None)
         ):
             raise GraphQLError("Access denied")
 
