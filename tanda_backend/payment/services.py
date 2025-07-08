@@ -84,3 +84,42 @@ def create_finik_qr_payment(order_id, amount, name_en):
         "qr_url": redirect_url,
         "qr_image": "",
     }
+
+
+def get_finik_payment_status(payment_id: str) -> str:
+    """Fetch payment status from Finik."""
+    method = "GET"
+    path = f"/v2/payments/{payment_id}"
+    host = "beta.api.paymentsgateway.averspay.kg"
+    url = f"{settings.FINIK_PAYMENT_STATUS_URL}/{payment_id}"
+
+    timestamp = str(int(time.time() * 1000))
+    headers = {
+        "Host": host,
+        "x-api-key": settings.FINIK_API_KEY,
+        "x-api-timestamp": timestamp,
+    }
+
+    request_data = {
+        "http_method": method,
+        "path": path,
+        "headers": headers,
+        "body": {},
+        "query_string_parameters": {},
+    }
+
+    signer = Signer(**request_data)
+    with open(settings.FINIK_PRIVATE_KEY_PATH, "rb") as f:
+        private_key = f.read()
+    signature = signer.sign(private_key)
+
+    request_headers = {
+        "x-api-key": settings.FINIK_API_KEY,
+        "x-api-timestamp": timestamp,
+        "signature": signature,
+    }
+
+    response = requests.get(url, headers=request_headers)
+    response.raise_for_status()
+    result = response.json()
+    return result.get("status", "")

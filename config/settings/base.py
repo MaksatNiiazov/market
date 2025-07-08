@@ -183,3 +183,18 @@ BOOSTER_ESDB_URI = env.str("BOOSTER_ESDB_URI", "esdb://localhost:2114?Tls=false"
 
 # External Product API settings
 EXTERNAL_PRODUCT_API_URL = env.str("EXTERNAL_PRODUCT_API_URL", "http://localhost:8045")
+
+# Finik payments settings
+FINIK_PAYMENT_URL = env.str(
+    "FINIK_PAYMENT_URL",
+    "https://beta.api.acquiring.averspay.kg/v1/payment",
+)
+FINIK_PAYMENT_STATUS_URL = env.str(
+    "FINIK_PAYMENT_STATUS_URL",
+    "https://beta.api.paymentsgateway.averspay.kg/v2/payments",
+)
+FINIK_ACCOUNT_ID = env.str("FINIK_ACCOUNT_ID", "")
+FINIK_MCC_CODE = env.str("FINIK_MCC_CODE", "0000")
+FINIK_API_KEY = env.str("FINIK_API_KEY", "")
+FINIK_CARD_REDIRECT_BASE = env.str("FINIK_CARD_REDIRECT_BASE", "")
+FINIK_PRIVATE_KEY_PATH = env.str("FINIK_PRIVATE_KEY_PATH", "")
