@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "mptt",
     "graphene_django",
-    'rest_framework',
+    "rest_framework",
     "tanda_backend.oauth",
     "tanda_backend.users",
     "tanda_backend.products",
@@ -183,3 +183,19 @@ BOOSTER_ESDB_URI = env.str("BOOSTER_ESDB_URI", "esdb://localhost:2114?Tls=false"
 
 # External Product API settings
 EXTERNAL_PRODUCT_API_URL = env.str("EXTERNAL_PRODUCT_API_URL", "http://localhost:8045")
+
+# Finik payment service
+FINIK_TEST = env.bool("FINIK_TEST", False)
+FINIK_PAYMENT_URL = env.str(
+    "FINIK_PAYMENT_URL",
+    "https://api.acquiring.averspay.kg/v1/payment",
+)
+FINIK_TEST_PAYMENT_URL = env.str(
+    "FINIK_TEST_PAYMENT_URL",
+    "https://beta.api.acquiring.averspay.kg/v1/payment",
+)
+FINIK_ACCOUNT_ID = env.str("FINIK_ACCOUNT_ID", "")
+FINIK_MCC_CODE = env.str("FINIK_MCC_CODE", "")
+FINIK_CARD_REDIRECT_BASE = env.str("FINIK_CARD_REDIRECT_BASE", "")
+FINIK_API_KEY = env.str("FINIK_API_KEY", "")
+FINIK_PRIVATE_KEY_PATH = env.str("FINIK_PRIVATE_KEY_PATH", "finik_private.pem")

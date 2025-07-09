@@ -5,7 +5,7 @@ from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .models import Payment
-from .services import create_finik_qr_payment
+from .services import create_finik_qr_payment, create_finik_card_payment
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -48,8 +48,13 @@ class CreatePaymentView(APIView):
                 payment.qr_url = result["qr_url"]
                 payment.qr_image = result["qr_image"]
                 payment.save()
+            elif method == "card":
+                result = create_finik_card_payment(order_id, amount, name_en)
+                payment.finik_item_id = result["item_id"]
+                payment.qr_url = result["qr_url"]
+                payment.save()
             else:
-                pass
+                return Response({"error": "Invalid method"}, status=400)
 
         except requests.HTTPError as e:
             error_response = e.response
@@ -65,4 +70,5 @@ class CreatePaymentView(APIView):
             "amount": payment.amount,
             "qr_url": payment.qr_url,
             "qr_image": payment.qr_image,
+            "finik_item_id": payment.finik_item_id,
         })
